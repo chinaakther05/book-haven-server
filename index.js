@@ -24,25 +24,25 @@ app.get("/", (req, res) => {
 
 async function run() {
   try {
-    await client.connect();
+    //await client.connect();
 
     const db = client.db("BookHavendb");
     const booksCollection = db.collection("books");
     const commentsCollection = db.collection("comments");
 
-   
+
     app.post("/books", async (req, res) => {
       const result = await booksCollection.insertOne(req.body);
       res.send(result);
     });
 
-    
+
     app.get("/books", async (req, res) => {
       const result = await booksCollection.find().toArray();
       res.send(result);
     });
 
-   
+
     app.get("/books/:id", async (req, res) => {
       try {
         const id = req.params.id;
@@ -54,7 +54,7 @@ async function run() {
       }
     });
 
-   
+
     app.patch("/books/:id", async (req, res) => {
       try {
         const id = req.params.id;
@@ -67,7 +67,7 @@ async function run() {
       }
     });
 
-  
+
     app.delete("/books/:id", async (req, res) => {
       try {
         const id = req.params.id;
@@ -78,17 +78,17 @@ async function run() {
       }
     });
 
-   
+
     app.get("/comments/:bookId", async (req, res) => {
       const bookId = req.params.bookId;
       const result = await commentsCollection.find({ bookId }).sort({ date: -1 }).toArray();
       res.send(result);
     });
 
-    
+
     app.post("/comments", async (req, res) => {
       const comment = req.body;
-      comment.date = new Date().toISOString(); 
+      comment.date = new Date().toISOString();
       const result = await commentsCollection.insertOne(comment);
       res.send(result);
     });
@@ -98,6 +98,8 @@ async function run() {
     console.error("❌ Error connecting:", err);
   }
 }
+
+
 run();
 
 app.listen(port, () => console.log(`🚀 Server running on port ${port}`));
