@@ -24,13 +24,48 @@ app.get("/", (req, res) => {
 
 async function run() {
   try {
-    //await client.connect();
+   // await client.connect();
 
     const db = client.db("BookHavendb");
     const booksCollection = db.collection("books");
     const commentsCollection = db.collection("comments");
-   
+    const usersCollection = db.collection("users");
 
+
+    // user api
+   app.post("/users", async (req, res) => {
+      const { name, email } = req.body;
+      const newUser = { name, email, role: "user" };
+      const result = await usersCollection.insertOne(newUser);
+      res.send(result);
+    });
+
+    app.get("/users", async (req, res) => {
+      const result = await usersCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get("/users/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const user = await usersCollection.findOne({ _id: new ObjectId(id) });
+        if (!user) return res.status(404).send({ message: "User not found" });
+        res.send(user);
+      } catch (err) {
+        res.status(400).send({ message: "Invalid user ID" });
+      }
+    });
+
+    app.patch("/users/:id/role", async (req, res) => {
+      const { role } = req.body;
+      const result = await usersCollection.updateOne(
+        { _id: new ObjectId(req.params.id) },
+        { $set: { role } }
+      );
+      res.send(result);
+    });
+
+  
 // book api
     app.post("/books", async (req, res) => {
       const result = await booksCollection.insertOne(req.body);
@@ -47,6 +82,17 @@ async function run() {
     });
 
 
+     app.get("/users/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const result = await usersCollection.findOne({ _id: new ObjectId(id) });
+        if (!result) return res.status(404).send({ message: "Book not found" });
+        res.send(result);
+      } catch (err) {
+        res.status(400).send({ message: "Invalid book ID" });
+      }
+    });
+
     app.get("/books/:id", async (req, res) => {
       try {
         const id = req.params.id;
@@ -61,11 +107,11 @@ async function run() {
     // GET /books?email=jannat@gmail.com
 app.get("/books", async (req, res) => {
   try {
-    const { email } = req.query; // query থেকে email নাও
+    const { email } = req.query; 
     const query = {};
 
     if (email) {
-      query.userEmail = email; // filter books by owner
+      query.userEmail = email; 
     }
 
     const books = await booksCollection.find(query).toArray();
