@@ -29,12 +29,16 @@ async function run() {
     const db = client.db("BookHavendb");
     const booksCollection = db.collection("books");
     const commentsCollection = db.collection("comments");
+   
 
-
+// book api
     app.post("/books", async (req, res) => {
       const result = await booksCollection.insertOne(req.body);
       res.send(result);
     });
+
+
+   
 
 
     app.get("/books", async (req, res) => {
@@ -53,6 +57,25 @@ async function run() {
         res.status(400).send({ message: "Invalid book ID" });
       }
     });
+
+    // GET /books?email=jannat@gmail.com
+app.get("/books", async (req, res) => {
+  try {
+    const { email } = req.query; // query থেকে email নাও
+    const query = {};
+
+    if (email) {
+      query.userEmail = email; // filter books by owner
+    }
+
+    const books = await booksCollection.find(query).toArray();
+    res.send(books);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send({ message: "Server Error" });
+  }
+});
+
 
 
     app.patch("/books/:id", async (req, res) => {
@@ -92,6 +115,30 @@ async function run() {
       const result = await commentsCollection.insertOne(comment);
       res.send(result);
     });
+
+
+    // Example: Express + MongoDB
+app.post("/users", async (req, res) => {
+  const { name, email } = req.body;
+
+  // default role = user
+  const newUser = { name, email, role: "user" };
+
+  const result = await usersCollection.insertOne(newUser);
+  res.send(result);
+});
+
+
+// Patch route example
+app.patch("/users/:id/role", async (req, res) => {
+  const { role } = req.body; // "admin"
+  const result = await usersCollection.updateOne(
+    { _id: new ObjectId(req.params.id) },
+    { $set: { role } }
+  );
+  res.send(result);
+});
+
 
     console.log("✅ Successfully connected to MongoDB!");
   } catch (err) {
