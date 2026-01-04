@@ -104,7 +104,7 @@ async function run() {
       }
     });
 
-    // GET /books?email=jannat@gmail.com
+    // GET /books?email
 app.get("/books", async (req, res) => {
   try {
     const { email } = req.query; 
